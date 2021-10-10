@@ -153,6 +153,9 @@ export async function addReservation(
 		throw new Error('Invalid time format');
 	}
 	const room = await getRoomById(roomId);
+    if (!room) {
+		throw new Error('Room do not exist');
+	}
 	const availableTimes = new Set(room.availableTimes);
 	if (!availableTimes.has(time)) {
 		throw new Error('Invalid time, please choose another one');
@@ -174,6 +177,53 @@ export async function addReservation(
 	]);
 	return true;
 }
+
+export async function updateReservation(
+	employeeId: string,
+    time: string,
+	roomId: string
+): Promise<boolean> {
+	const startTimeMoment = moment(time, 'HH:mm');
+	if (!startTimeMoment.isValid()) {
+		throw new Error('Invalid time format');
+	}
+	const room = await getRoomById(roomId);
+    if (!room) {
+		throw new Error('Room do not exist');
+	}
+	const availableTimes = new Set(room.availableTimes);
+	if (!availableTimes.has(time)) {
+		throw new Error('Invalid time, please choose another one');
+	}
+
+    // TODO This is a naive implementation this should be fixed in the next sprint
+    await cancelReservation(employeeId, roomId);
+	return await addReservation(employeeId, time, roomId);
+}
+
+export async function cancelReservation(
+	employeeId: string,
+	roomId: string
+): Promise<boolean> {
+	const room = await getRoomById(roomId);
+    if (!room) {
+		throw new Error('Room do not exist');
+	}
+
+    // TODO This is a naive implementation this should be fixed in the next sprint
+
+    let query = `DELETE FROM reservation WHERE employee_id = $1 
+    and meditation_room_id = $2 
+    and date_reservation = $3;`
+    await runQuery(query, [
+		employeeId,
+		roomId,
+		getCurrentDate(),
+	]);
+
+	return true;
+}
+
 
 export async function getAvailableTimesByRooms() {
 	const query = `SELECT * FROM reservation where date_reservation = current_date();`;
