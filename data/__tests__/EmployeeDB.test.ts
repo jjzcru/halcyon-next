@@ -6,7 +6,7 @@ test.skip('Should get an employee by its id', async () => {
     expect(employee.id).toBe(id);
 });
 
-test('Should authenticate an employee', async () => {
+test.skip('Should authenticate an employee', async () => {
     const email = 'viyeta@gmail.com';
     const password = 'password';
     const isValid = await authenticate(email, password);
