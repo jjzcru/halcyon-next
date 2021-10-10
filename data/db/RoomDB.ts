@@ -103,6 +103,33 @@ export async function getRooms(): Promise<Array<Room>> {
 	return rooms;
 }
 
+export async function getRoomById(id: string): Promise<Room> {
+	const query = `SELECT * FROM meditation_room where id = $1;`;
+	let { rows } = await runQuery(query, [id]);
+	const rooms: Array<Room> = rows.map(mapRoom);
+    if(!rooms.length) {
+        return null;
+    }
+	for (let i = 0; i < rooms.length; i++) {
+		const room = rooms[i];
+		let availableTimes = new Set(getTimeInRage(
+			room.startAvailableTime,
+			room.endAvailableTime,
+			room.timeInterval
+		));
+		const reservations = await getReservations(room.id);
+
+        for(const reservation of reservations) {
+            if(availableTimes.has(reservation.startTime)) {
+                availableTimes.delete(reservation.startTime)
+            }
+        }
+
+        room.availableTimes = Array.from(availableTimes);
+	}
+	return rooms[0];
+}
+
 export async function getReservations(id: string): Promise<Array<Reservation>> {
 	const query = `SELECT * FROM reservation 
     WHERE date_reservation = '${getCurrentDate()}'
