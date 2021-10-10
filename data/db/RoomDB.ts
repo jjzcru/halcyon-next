@@ -85,20 +85,22 @@ export async function getRooms(): Promise<Array<Room>> {
 	const rooms: Array<Room> = rows.map(mapRoom);
 	for (let i = 0; i < rooms.length; i++) {
 		const room = rooms[i];
-		let availableTimes = new Set(getTimeInRage(
-			room.startAvailableTime,
-			room.endAvailableTime,
-			room.timeInterval
-		));
+		let availableTimes = new Set(
+			getTimeInRage(
+				room.startAvailableTime,
+				room.endAvailableTime,
+				room.timeInterval
+			)
+		);
 		const reservations = await getReservations(room.id);
 
-        for(const reservation of reservations) {
-            if(availableTimes.has(reservation.startTime)) {
-                availableTimes.delete(reservation.startTime)
-            }
-        }
+		for (const reservation of reservations) {
+			if (availableTimes.has(reservation.startTime)) {
+				availableTimes.delete(reservation.startTime);
+			}
+		}
 
-        room.availableTimes = Array.from(availableTimes);
+		room.availableTimes = Array.from(availableTimes);
 	}
 	return rooms;
 }
@@ -107,25 +109,27 @@ export async function getRoomById(id: string): Promise<Room> {
 	const query = `SELECT * FROM meditation_room where id = $1;`;
 	let { rows } = await runQuery(query, [id]);
 	const rooms: Array<Room> = rows.map(mapRoom);
-    if(!rooms.length) {
-        return null;
-    }
+	if (!rooms.length) {
+		return null;
+	}
 	for (let i = 0; i < rooms.length; i++) {
 		const room = rooms[i];
-		let availableTimes = new Set(getTimeInRage(
-			room.startAvailableTime,
-			room.endAvailableTime,
-			room.timeInterval
-		));
+		let availableTimes = new Set(
+			getTimeInRage(
+				room.startAvailableTime,
+				room.endAvailableTime,
+				room.timeInterval
+			)
+		);
 		const reservations = await getReservations(room.id);
 
-        for(const reservation of reservations) {
-            if(availableTimes.has(reservation.startTime)) {
-                availableTimes.delete(reservation.startTime)
-            }
-        }
+		for (const reservation of reservations) {
+			if (availableTimes.has(reservation.startTime)) {
+				availableTimes.delete(reservation.startTime);
+			}
+		}
 
-        room.availableTimes = Array.from(availableTimes);
+		room.availableTimes = Array.from(availableTimes);
 	}
 	return rooms[0];
 }
@@ -143,7 +147,33 @@ export async function addReservation(
 	employeeId: string,
 	time: string,
 	roomId: string
-) {}
+): Promise<boolean> {
+	const startTimeMoment = moment(time, 'HH:mm');
+	if (!startTimeMoment.isValid()) {
+		throw new Error('Invalid time format');
+	}
+	const room = await getRoomById(roomId);
+	const availableTimes = new Set(room.availableTimes);
+	if (!availableTimes.has(time)) {
+		throw new Error('Invalid time, please choose another one');
+	}
+
+	const startTime = startTimeMoment.format('HH:mm');
+    const endTimeMoment = startTimeMoment.add(room.timeInterval, 'm');
+    const endTime = endTimeMoment.format('HH:mm');
+
+	const query = `INSERT INTO reservation (start_time, end_time, employee_id, 
+        meditation_room_id, date_reservation) 
+        VALUES ($1, $2, $3, $4, $5);`;
+	await runQuery(query, [
+		startTime,
+		endTime,
+		`${employeeId}`,
+		`${roomId}`,
+		getCurrentDate(),
+	]);
+	return true;
+}
 
 export async function getAvailableTimesByRooms() {
 	const query = `SELECT * FROM reservation where date_reservation = current_date();`;
@@ -161,5 +191,5 @@ export async function getRoomReservations(
 }
 
 function getCurrentDate() {
-    return moment().format('YYYY-MM-DD');
+	return moment().format('YYYY-MM-DD');
 }
