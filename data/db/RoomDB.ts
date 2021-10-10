@@ -148,6 +148,10 @@ export async function addReservation(
 	time: string,
 	roomId: string
 ): Promise<boolean> {
+    const employeeReservation = await getEmployeeCurrentReservation(employeeId);
+    if(employeeReservation) {
+        throw new Error('A reservation is already schedule');
+    }
 	const startTimeMoment = moment(time, 'HH:mm');
 	if (!startTimeMoment.isValid()) {
 		throw new Error('Invalid time format');
@@ -183,6 +187,11 @@ export async function updateReservation(
     time: string,
 	roomId: string
 ): Promise<boolean> {
+    const employeeReservation = await getEmployeeCurrentReservation(employeeId);
+    if(!employeeReservation) {
+        throw new Error('There is not a current reservation');
+    }
+    
 	const startTimeMoment = moment(time, 'HH:mm');
 	if (!startTimeMoment.isValid()) {
 		throw new Error('Invalid time format');
@@ -205,6 +214,11 @@ export async function cancelReservation(
 	employeeId: string,
 	roomId: string
 ): Promise<boolean> {
+    const employeeReservation = await getEmployeeCurrentReservation(employeeId);
+    if(!employeeReservation) {
+        throw new Error('There is not a current reservation');
+    }
+
 	const room = await getRoomById(roomId);
     if (!room) {
 		throw new Error('Room do not exist');
@@ -240,6 +254,21 @@ export async function getRoomReservations(
 	return rows.map(mapReservation);
 }
 
+export async function getEmployeeCurrentReservation(employeeId): Promise<Reservation> {
+    const query = `SELECT * FROM reservation 
+    WHERE date_reservation = '${getCurrentDate()}'
+    AND employee_id = $1
+    LIMIT 1;`;
+	let { rows } = await runQuery(query, [employeeId]);
+	const reservations = rows.map(mapReservation);
+    if(!reservations.length) {
+        return null;
+    }
+	return reservations[0];
+}
+
 function getCurrentDate() {
 	return moment().format('YYYY-MM-DD');
 }
+
+
