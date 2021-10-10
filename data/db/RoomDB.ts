@@ -91,7 +91,6 @@ export async function getRooms(): Promise<Array<Room>> {
 			room.timeInterval
 		));
 		const reservations = await getReservations(room.id);
-        console.log(`Reservations`, reservations);
 
         for(const reservation of reservations) {
             if(availableTimes.has(reservation.startTime)) {

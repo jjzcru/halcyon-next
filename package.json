@@ -2,17 +2,20 @@
   "name": "halcyon-api",
   "version": "0.1.1",
   "private": false,
+  "license" : "MIT",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "coverage": "jest --coverage"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "cockroachdb": "^1.0.3",
+    "cors": "^2.8.5",
     "jsonwebtoken": "^8.5.1",
     "moment": "^2.29.1",
     "next": "11.1.2",
