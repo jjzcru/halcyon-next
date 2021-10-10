@@ -79,15 +79,6 @@ function mapReservation(row: any): Reservation {
 	};
 }
 
-/* Get available rooms
-1. Get the first and last time
-2. Create an array of all the posible dates using the interval
-3. Get current reservations
-4. Remove all the times that matches the reservations
-5. The result is available times
-
-*/
-
 export async function getRooms(): Promise<Array<Room>> {
 	const query = `SELECT * FROM meditation_room;`;
 	let { rows } = await runQuery(query);

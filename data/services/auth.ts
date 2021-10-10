@@ -3,9 +3,7 @@ import moment from 'moment';
 import { Employee } from '../db/EmployeeDB';
 
 export async function getSignedToken(employee: Employee): Promise<any> {
-    console.log(`Employee`);
-    console.log(employee)
-    const payload: any = {
+	const payload: any = {
 		id: employee.id,
 	};
 
@@ -26,6 +24,16 @@ export async function getSignedToken(employee: Employee): Promise<any> {
 		token,
 		expiredAt,
 	};
+}
+
+export async function getTokenData(req): Promise<any> {
+	const { headers } = req;
+	if (!headers['authorization']) {
+		throw new Error('Missing authorization header');
+	}
+
+	const token = headers['authorization'].replace('Bearer ', '');
+	return await decodeToken(token);
 }
 
 export async function decodeToken(token: string): Promise<any> {
