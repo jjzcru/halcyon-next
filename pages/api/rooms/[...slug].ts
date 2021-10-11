@@ -67,7 +67,8 @@ async function reqGetRoomById(req, res) {
 
 	if (room) {
 		room.availableTimes = room.availableTimes.filter((time) => {
-			const timeMoment = moment(time, 'HH:mm').tz('America/New_York');
+			const timeMoment = moment(time, 'HH:mm');
+			console.log(`This moment '${timeMoment.format('hh:mm A')}' is greather after ${now.format('hh:mm A')}: ${timeMoment.isAfter(now)}`);
 			return timeMoment.isAfter(now);
 		});
 		res.status(200).json({ room, status: 'success' });
