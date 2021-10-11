@@ -1,3 +1,4 @@
+import moment from 'moment-timezone'
 import { addReservation, cancelReservation, getRoomById, updateReservation } from '../../../data/db/RoomDB';
 import { getTokenData } from '../../../data/services/auth';
 import { cors, runMiddleware } from '../../../middleware/cors';
@@ -55,7 +56,20 @@ async function reqGetRoomById(req, res) {
 	const { slug } = req.query;
 	const roomId = slug[0];
 	const room = await getRoomById(roomId);
+	let tz = req.headers['x-time-zone'] || 'America/New_York';
+        let now;
+        try {
+            now = moment(new Date()).tz(tz);
+        } catch(e) {
+            tz = 'America/New_York';
+            now = moment(new Date()).tz('America/New_York');
+        }
+
 	if (room) {
+		room.availableTimes = room.availableTimes.filter((time) => {
+			const timeMoment = moment(time, 'HH:mm').tz('America/New_York');
+			return timeMoment.isAfter(now);
+		});
 		res.status(200).json({ room, status: 'success' });
 		return;
 	}
@@ -68,6 +82,18 @@ async function reqAddReservation(req, res, tokenData) {
 	const employeeId = tokenData.id;
 	const { body } = req;
 	const { time } = body;
+	let tz = req.headers['x-time-zone'] || 'America/New_York';
+        let now;
+        try {
+            now = moment(new Date()).tz(tz);
+        } catch(e) {
+            tz = 'America/New_York';
+            now = moment(new Date()).tz('America/New_York');
+        }
+		const timeMoment = moment(time, 'HH:mm').tz(tz);
+		if(timeMoment.isAfter(now)) {
+			
+		}
 	const success = await addReservation(employeeId, time, roomId);
 	if (success) {
 		res.status(200).json({ status: 'success' });
