@@ -17,8 +17,8 @@ export default async function handler(req, res) {
 		}
         const {token, expiredAt} = await getSignedToken(employee)
         res.status(200).json({ 
-            auth_token: token,
-            expired_at: expiredAt,
+            authToken: token,
+            expiredAt: expiredAt,
             message: 'Successfully logged in.',
             status: 'success'
          });
