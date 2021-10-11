@@ -36,6 +36,7 @@ export default async function handler(req, res) {
             rooms = rooms.map(room => {
                 room.availableTimes = room.availableTimes.filter((time) => {
 					const timeMoment = moment(time, 'HH:mm').tz('America/New_York');
+                    console.log(`Time moment: ${timeMoment.format('hh:mm A')}`);
 					return timeMoment.isAfter(now);
 				});
                 return room;
