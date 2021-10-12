@@ -158,7 +158,9 @@ export async function addReservation(
 	if (!startTimeMoment.isValid()) {
 		throw new Error('Invalid time format');
 	}
-	if (!startTimeMoment.isAfter(moment(new Date()).tz(tz))) {
+	let now: any = moment(new Date()).tz('America/New_York');
+	now = now.format('HH:mm');
+	if (!startTimeMoment.isAfter(moment(now, 'HH:mm'))) {
 		throw new Error('Unable to book time in the past');
 	}
 
