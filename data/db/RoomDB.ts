@@ -16,7 +16,7 @@ export interface Room {
 export interface Reservation {
 	id?: string;
 	employeeId?: string;
-	date?: Date;
+	date?: Date | string;
 	startTime?: string;
 	endTime?: string;
 	meditationRoomId?: string;
@@ -75,7 +75,9 @@ function mapReservation(row: any): Reservation {
 		id: row.id,
 		employeeId: row.employee_id,
 		date: row.date_reservation
-			? moment(row.date_reservation, 'YYYY-MM-DD').tz('America/New_York').toDate()
+			? `${moment(row.date_reservation, 'YYYY-MM-DD').format(
+					'YYYY-MM-DD'
+			  )}T04:00:00.000Z`
 			: null,
 		startTime: row.start_time,
 		endTime: row.end_time,
