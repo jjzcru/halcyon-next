@@ -30,13 +30,13 @@ export default async function handler(req, res) {
             now = moment(new Date()).tz('America/New_York');
         }
 
-        console.log(`Time ${tz}: ${now.format('hh:mm A')}`)
+        now = now.format('HH:mm');
 
         if(rooms) {
             rooms = rooms.map(room => {
                 room.availableTimes = room.availableTimes.filter((time) => {
-					const timeMoment = moment(time, 'HH:mm').tz('America/New_York');
-					return timeMoment.isAfter(now);
+					const timeMoment = moment(time, 'HH:mm');
+					return timeMoment.isAfter(moment(now, 'HH:mm'));
 				});
                 return room;
             })
