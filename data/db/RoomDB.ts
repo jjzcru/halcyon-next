@@ -16,7 +16,7 @@ export interface Room {
 export interface Reservation {
 	id?: string;
 	employeeId?: string;
-	date?: Date;
+	date?: Date | string;
 	startTime?: string;
 	endTime?: string;
 	meditationRoomId?: string;
@@ -74,7 +74,11 @@ function mapReservation(row: any): Reservation {
 	return {
 		id: row.id,
 		employeeId: row.employee_id,
-		date: row.date_reservation ? new Date(row.date_reservation) : null,
+		date: row.date_reservation
+			? moment(row.date_reservation, 'YYYY-MM-DD').format(
+				'YYYY-MM-DD'
+		  )
+			: null,
 		startTime: row.start_time,
 		endTime: row.end_time,
 		meditationRoomId: row.meditation_room_id,
@@ -236,11 +240,7 @@ export async function cancelReservation(
     and meditation_room_id = $2 
     and date_reservation = $3
 	and start_time > '${getCurrentTime()}';`;
-	await runQuery(query, [
-		employeeId,
-		roomId,
-		getCurrentDate(),
-	]);
+	await runQuery(query, [employeeId, roomId, getCurrentDate()]);
 
 	return true;
 }
