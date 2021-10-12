@@ -75,9 +75,9 @@ function mapReservation(row: any): Reservation {
 		id: row.id,
 		employeeId: row.employee_id,
 		date: row.date_reservation
-			? `${moment(row.date_reservation, 'YYYY-MM-DD').format(
-					'YYYY-MM-DD'
-			  )}T04:00:00.000Z`
+			? moment(row.date_reservation, 'YYYY-MM-DD').format(
+				'YYYY-MM-DD'
+		  )
 			: null,
 		startTime: row.start_time,
 		endTime: row.end_time,
