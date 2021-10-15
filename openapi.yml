@@ -93,6 +93,21 @@ components:
           type: string
         type:
           type: string
+          enum: [song, sound, guide]
+    reminder:
+      type: object
+      properties:
+        id:
+          type: string 
+        employeeId:
+          type: string 
+        startAt:
+          type: string
+        endAt:
+          type: string 
+        type:
+          type: string
+          enum: [water, break]
 
 security:
   - bearerAuth: [] 
@@ -473,4 +488,29 @@ paths:
                     type: string
                   sound:
                     $ref: '#/components/schemas/sound'
+  /reminders:
+    get:
+      security:
+        - bearerAuth: []
+      summary: Returns a list of reminders for the employee
+      responses:
+        '400':
+          description: 'Missing authorization header'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_missing_header'
+        '200':    # status code
+          description: A JSON array of sounds
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties:
+                  status:
+                    type: string
+                  reminders:   
+                    type: array
+                    items: 
+                      $ref: '#/components/schemas/reminder'
   
