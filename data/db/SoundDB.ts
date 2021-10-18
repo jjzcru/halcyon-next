@@ -12,7 +12,7 @@ export interface Sound {
 function mapSound(row: any): Sound {
     return {
 		id: row.id,
-		name: row.room_name,
+		name: row.name,
 		description: row.description,
 		length: row.length ? parseInt(`${row.length}`) : null,
 		credit: row.credit,
