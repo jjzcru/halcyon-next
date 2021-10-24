@@ -3,6 +3,7 @@ export interface Reminder {
     id: string;
 	employeeId?: string;
 	startAt?: string;
+	interval?: number;
 	endAt?: string;
 	type?: 'water' | 'break';
 }
@@ -24,6 +25,7 @@ function mapReminder(row: any): Reminder {
 		id: row.id,
 		employeeId: row.employee_id,
         startAt: row.start_at,
+		interval: row.interval ? parseInt(`${row.interval}`) : null,
         endAt: row.end_at,
 		type: row.type,
 	};
