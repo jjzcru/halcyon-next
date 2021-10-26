@@ -1,0 +1,1 @@
+export type Category = 'guided_meditation' | 'meditation' | 'water' | 'break';
