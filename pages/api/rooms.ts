@@ -14,7 +14,6 @@ export default async function handler(req, res) {
 
     if (req.method === 'GET') {
         try {
-
             await getTokenData(req);
         } catch (e) {
             res.status(400).json({ message: e.message, status: 'error' });
