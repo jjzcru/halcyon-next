@@ -19,7 +19,7 @@ function mapData(row: any): Event {
 		employeeId: row.employee_id,
         state: row.state,
 		category: row.category,
-		length: row.length,
+		length: row.length ? parseInt(`${row.length}`) : null,
 		createdAt,
 	};
 }
