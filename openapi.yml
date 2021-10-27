@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: Halcyon
   description: Api documentation for Halcyon
-  version: 1.3.4
+  version: 1.4.0
 servers:
   - url: https://halcyon-next.vercel.app/api
     description: Stable development
@@ -110,6 +110,24 @@ components:
         type:
           type: string
           enum: [water, break]
+    goal:
+      type: object
+      properties:
+        id:
+          type: string 
+        employeeId:
+          type: string 
+        target:
+          type: number
+        category:
+          type: string 
+          enum: [guided_meditation, meditation, water, break]
+        frequency:
+          type: string 
+          enum: [daily, weekly, monthly, yearly]
+        createdAt:
+          type: string 
+          format: 'date-time'
     event:
       type: object
       properties:
@@ -572,7 +590,202 @@ paths:
                   reminder:   
                     type: object
                     $ref: '#/components/schemas/reminder'
-  
+  /goals:
+    get:
+      security:
+        - bearerAuth: []
+      summary: Return a list of all the employee goals
+      responses:
+        '400':
+          description: 'Missing authorization header'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_missing_header'
+        '200':
+          description: A JSON array of goals
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties:
+                  status:
+                    type: string
+                  goals:   
+                    type: array
+                    items: 
+                      $ref: '#/components/schemas/goal'
+    post:
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                target:
+                  type: number
+                category:
+                  type: string 
+                  enum: [guided_meditation, meditation, water, break]
+                frequency:
+                  type: string 
+                  enum: [daily, weekly, monthly, yearly]
+      summary: Create a new goal for the employee
+      responses:
+        '400':
+          description: 'Missing authorization header'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_missing_header'
+        '200':    # status code
+          description: Return the created goal
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties:
+                  status:
+                    type: string
+                  goal:   
+                    type: object
+                    $ref: '#/components/schemas/goal'
+  /goals/{goalId}:
+    get:
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: goalId
+          schema:
+            type: integer
+          required: true
+          description: Id of the goal
+      summary: Return a goal by it's id
+      responses:
+        '400':
+          description: 'Missing authorization header'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_missing_header'
+        '404':
+          description: 'Goal not found'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: string
+        '200':
+          description: Success message
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties:
+                  success:
+                    type: string
+                  goal:
+                    $ref: '#/components/schemas/goal'
+    put:
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: goalId
+          schema:
+            type: integer
+          required: true
+          description: Id of the goal
+      summary: Return the updated goal by it's id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                target:
+                  type: number
+                frequency:
+                  type: string 
+                  enum: [daily, weekly, monthly, yearly]
+      responses:
+        '400':
+          description: 'Missing authorization header'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_missing_header'
+        '404':
+          description: 'Goal not found'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: string
+        '200':
+          description: Return the updated goal
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties:
+                  success:
+                    type: string
+                  goal:
+                    $ref: '#/components/schemas/goal'
+    delete:
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: goalId
+          schema:
+            type: integer
+          required: true
+          description: Id of the goal
+      summary: Return the id of the deleted goal
+      responses:
+        '400':
+          description: 'Missing authorization header'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_missing_header'
+        '404':
+          description: 'Goal not found'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: string
+        '200':
+          description: Return the id of the deleted goal
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties:
+                  success:
+                    type: string
+                  id:
+                    type: string
   /events:
     post:
       security:
@@ -611,5 +824,29 @@ paths:
                     type: string
                   event:   
                     $ref: '#/components/schemas/event'
+    get:
+      security:
+        - bearerAuth: []
+      summary: Get employee events
+      responses:
+        '400':
+          description: 'Missing authorization header'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_missing_header'
+        '200':    # status code
+          description: An event response
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties:
+                  status:
+                    type: string
+                  events:   
+                    type: array
+                    items: 
+                      $ref: '#/components/schemas/event'
                       
   
