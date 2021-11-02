@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: Halcyon
   description: Api documentation for Halcyon
-  version: 1.4.0
+  version: 1.5.0
 servers:
   - url: https://halcyon-next.vercel.app/api
     description: Stable development
@@ -146,6 +146,44 @@ components:
         createdAt:
           type: string 
           format: 'date-time'
+    personality_question:
+      type: object
+      properties:
+        id:
+          type: string 
+        content:
+          type: string 
+        index:
+          type: number
+        options:
+          type: array
+          items: 
+            $ref: '#/components/schemas/personality_option'
+    personality_option:
+      type: object
+      properties:
+        id:
+          type: string 
+        questionId:
+          type: string 
+        content:
+          type: string
+        index:
+          type: number 
+        value:
+          type: string
+          enum: [e,i,s,n,t,f,j,p]
+    mood_activity:
+      type: object
+      properties:
+        id:
+          type: string 
+        inputEmotion:
+          type: string 
+        activity:
+          type: string
+        outputEmotion:
+          type: string 
 
 security:
   - bearerAuth: [] 
@@ -848,5 +886,53 @@ paths:
                     type: array
                     items: 
                       $ref: '#/components/schemas/event'
-                      
-  
+  /personality/questions:
+    get:
+      security:
+        - bearerAuth: []
+      summary: Get questions for personality detection
+      responses:
+        '400':
+          description: 'Missing authorization header'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_missing_header'
+        '200':    # status code
+          description: An event response
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties:
+                  status:
+                    type: string
+                  questions:   
+                    type: array
+                    items: 
+                      $ref: '#/components/schemas/personality_question'
+  /moods/activities:
+    get:
+      security:
+        - bearerAuth: []
+      summary: Get activities to change moods
+      responses:
+        '400':
+          description: 'Missing authorization header'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_missing_header'
+        '200':    # status code
+          description: An event response
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties:
+                  status:
+                    type: string
+                  questions:   
+                    type: array
+                    items: 
+                      $ref: '#/components/schemas/mood_activity'
