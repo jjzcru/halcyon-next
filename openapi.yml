@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: Halcyon
   description: Api documentation for Halcyon
-  version: 1.5.0
+  version: 1.5.1
 servers:
   - url: https://halcyon-next.vercel.app/api
     description: Stable development
@@ -61,6 +61,8 @@ components:
           type: string
           format: date
         gender:
+          type: string
+        personality:
           type: string
     reservation:
       type: object
@@ -253,6 +255,40 @@ paths:
                     type: string
                   employee: 
                     $ref: '#/components/schemas/employee'
+  /me/personality:
+    put:
+      security:
+        - bearerAuth: []
+      summary: Set the employee personality
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                personality: 
+                  type: string
+                  enum: [intj, intp, entj, entp, infj, infp, enfj, enfp, istj, isfj, estj, esfj, istp, isfp, estp, esfp]
+      responses:
+        '401':
+          description: 'Missing authorization header'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_missing_header'
+        '200':    # status code
+          description: Return the personality that was sent
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties:
+                  status:
+                    type: string
+                  personality: 
+                    type: string
+                    enum: [intj, intp, entj, entp, infj, infp, enfj, enfp, istj, isfj, estj, esfj, istp, isfp, estp, esfp]
                       
   /reservation:
     get:
