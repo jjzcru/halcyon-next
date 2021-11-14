@@ -1,8 +1,7 @@
 import { getPersonalityQuestions} from '../db/PersonalityDB'
 
-test.only('Should get personality question and options', async () => {
+test('Should get personality question and options', async () => {
     const questions = await getPersonalityQuestions();
-    console.log(JSON.stringify(questions));
     expect(typeof questions).toBe('object');
     expect(questions.length).toBeGreaterThan(1);
     for(const question of questions) {

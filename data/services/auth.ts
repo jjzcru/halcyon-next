@@ -8,7 +8,7 @@ export async function getSignedToken(employee: Employee): Promise<any> {
 	};
 
 	let token: string;
-	const dateAmount = 7;
+	const dateAmount = 90;
 	const dateUnit = 'd';
 	const expiresIn = `${dateAmount}${dateUnit}`;
 
