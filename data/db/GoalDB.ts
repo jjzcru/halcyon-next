@@ -82,3 +82,9 @@ export async function deleteGoal(
 	]);
     return rows.length ? rows[0].id : null;
 }
+
+export async function getAchievementGoals(employeeId: string): Promise<Array<Goal>> {
+	const query = `SELECT * FROM employee_goal WHERE employee_id = $1;`;
+	let { rows } = await runQuery(query, [employeeId]);
+	return rows.map(mapData);
+}

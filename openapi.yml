@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: Halcyon
   description: Api documentation for Halcyon
-  version: 1.5.1
+  version: 1.6.0
 servers:
   - url: https://halcyon-next.vercel.app/api
     description: Stable development
@@ -1055,3 +1055,28 @@ paths:
                     type: array
                     items: 
                       $ref: '#/components/schemas/award'
+  /achievements/goals:
+    get:
+      security:
+        - bearerAuth: []
+      summary: Get a list of all the completed goals
+      responses:
+        '400':
+          description: 'Missing authorization header'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_missing_header'
+        '200':    # status code
+          description: List of completed goals
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties:
+                  status:
+                    type: string
+                  goals:   
+                    type: array
+                    items: 
+                      $ref: '#/components/schemas/goal'
