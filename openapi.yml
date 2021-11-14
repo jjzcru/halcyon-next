@@ -57,6 +57,8 @@ components:
           type: string 
         isConfirmed:
           type: boolean
+        isDepressed:
+          type: boolean
         birthday:
           type: string
           format: date
@@ -289,6 +291,38 @@ paths:
                   personality: 
                     type: string
                     enum: [intj, intp, entj, entp, infj, infp, enfj, enfp, istj, isfj, estj, esfj, istp, isfp, estp, esfp]
+  /me/depression:
+    put:
+      security:
+        - bearerAuth: []
+      summary: Set if the employee is depressed
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                isDepressed: 
+                  type: boolean
+      responses:
+        '401':
+          description: 'Missing authorization header'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_missing_header'
+        '200':    # status code
+          description: Return the value that was set for the depression
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties:
+                  status:
+                    type: string
+                  isDepressed: 
+                    type: boolean
                       
   /reservation:
     get:
