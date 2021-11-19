@@ -13,7 +13,7 @@ test.skip('Should authenticate an employee', async () => {
     expect(isValid).toBe(true);
 });
 
-test.only('Should set an employee as depressed by its id', async () => {
+test.skip('Should set an employee as depressed by its id', async () => {
     const id = '700165948337235729';
     const isDepressed: boolean = true;
     const employee = await setEmployeeDepression(id, isDepressed);
