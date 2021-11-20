@@ -42,3 +42,13 @@ export async function getAwards(employeeId: string): Promise<Array<Award>> {
 	let { rows } = await runQuery(query, [employeeId]);
 	return rows.map(mapData);
 }
+
+export async function addAward(employeeId: string, awardId: string, createdAt: string): Promise<void> {
+	const query = `INSERT INTO employee_award (employee_id, award_id, created_at)
+	VALUES ($1, $2, $3) RETURNING id;`;
+    await runQuery(query, [
+		employeeId,
+		awardId,
+		createdAt
+	]);
+}

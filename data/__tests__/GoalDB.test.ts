@@ -1,7 +1,7 @@
 import { Category } from '../db/EventDB';
 import { addGoal, getGoals, getGoal, updateGoal, deleteGoal, Frequency } from '../db/GoalDB'
 
-test('Should get the reminders by an employee id', async () => {
+test.skip('Should get the reminders by an employee id', async () => {
     const employeeId = '698927090631649041';
     const goals = await getGoals(employeeId);
 
@@ -11,7 +11,7 @@ test('Should get the reminders by an employee id', async () => {
     }
 });
 
-test('Should return a null goal because the id does not exist', async () => {
+test.skip('Should return a null goal because the id does not exist', async () => {
     const id = '0';
     const employeeId = '698927090631649041';
     const goal = await getGoal(id, employeeId);
@@ -19,7 +19,7 @@ test('Should return a null goal because the id does not exist', async () => {
     expect(goal).toBeNull();
 });
 
-test('Should return a goal by its id', async () => {
+test.skip('Should return a goal by its id', async () => {
     const id = '705217808479322113';
     const employeeId = '698927090631649041';
     const goal = await getGoal(id, employeeId);
@@ -62,7 +62,7 @@ test.skip('Should update a goal', async () => {
     expect(goal.frequency).toBe(frequency);
 });
 
-test.only('Should delete the goal', async () => {
+test.skip('Should delete the goal', async () => {
     const target = 10;
     const category: Category = 'break';
     const frequency: Frequency = 'monthly';

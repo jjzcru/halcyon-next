@@ -1,12 +1,12 @@
 import { getSounds, getSound, getSoundByType } from '../db/SoundDB'
 
-test('Should get the list of all the sounds', async () => {
+test.skip('Should get the list of all the sounds', async () => {
     const sounds = await getSounds();
     expect(typeof sounds).toBe('object');
     expect(sounds.length).toBeGreaterThan(0);
 });
 
-test('Should get the list of all the sounds that are type "sound"', async () => {
+test.skip('Should get the list of all the sounds that are type "sound"', async () => {
     const type = 'sound';
     const sounds = await getSoundByType(type);
     expect(typeof sounds).toBe('object');
@@ -16,7 +16,7 @@ test('Should get the list of all the sounds that are type "sound"', async () => 
     }
 });
 
-test('Should get a sound by id', async () => {
+test.skip('Should get a sound by id', async () => {
     const id = '701843824305710865';
     const sound = await getSound(id);
     expect(sound).toBeDefined()

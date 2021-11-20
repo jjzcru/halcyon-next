@@ -47,3 +47,18 @@ export async function getEvents(employeeId: string): Promise<Array<Event>> {
 	]);
     return rows.map(mapData);
 }
+
+export async function getEventsInRange(employeeId: string, category: Category, startDate: string, endDate: string):  Promise<Array<Event>> {
+    const query = `SELECT * FROM events WHERE employee_id = $1 
+	AND category = $2
+	AND created_at >= $3
+	AND created_at <= $4
+	AND state = 'completed'`;
+    let { rows } = await runQuery(query, [
+		employeeId,
+		category,
+		startDate,
+		endDate
+	]);
+    return rows.map(mapData);
+}
