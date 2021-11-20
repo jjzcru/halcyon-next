@@ -1,4 +1,7 @@
-import { getPersonalityQuestions } from '../../../data/db/PersonalityDB';
+import {
+    generateAuthenticationOptions,
+    verifyAuthenticationResponse,
+  } from '@simplewebauthn/server';
 import { getTokenData } from '../../../data/services/auth';
 import { cors, runMiddleware } from '../../../middleware/cors';
 
@@ -13,8 +16,8 @@ export default async function handler(req, res) {
 	}
 
 	switch (req.method) {
-		case 'POST':
-			await postRegisterReq(tokenData.id, req, res);
+		case 'GET':
+			await getAuthenticatorsReq(tokenData.id, req, res);
 			return;
 		default:
 			res.status(400).json({
@@ -24,6 +27,6 @@ export default async function handler(req, res) {
 	}
 }
 
-async function postRegisterReq(employeeId, req, res) {
-	res.status(200).json({ employeeId, status: 'success' });
+async function getAuthenticatorsReq(employeeId, req, res) {
+	res.status(200).json({ authenticators: [], status: 'success' });
 }
