@@ -1,6 +1,6 @@
 import { getAwards } from '../db/AwardDB';
 
-test.only('Should get the reminders by an employee id', async () => {
+test.skip('Should get the awards by an employee id', async () => {
 	const employeeId = '698927090631649041';
 	const awards = await getAwards(employeeId);
 

@@ -1,6 +1,6 @@
 import { getMoodActivities} from '../db/MoodActivityDB'
 
-test('Should get mood activities', async () => {
+test.skip('Should get mood activities', async () => {
     const activities = await getMoodActivities();
     expect(typeof activities).toBe('object');
     expect(activities.length).toBeGreaterThan(1);
