@@ -7,6 +7,12 @@ import {
 	Category,
 	getEventsInRange,
 } from '../../data/db/EventDB';
+import {
+	getGoals,
+	Goal,
+	getLastCompletedGoal,
+	completeGoal,
+} from '../../data/db/GoalDB';
 import { getTokenData } from '../../data/services/auth';
 import { cors, runMiddleware } from '../../middleware/cors';
 
@@ -109,15 +115,12 @@ async function addEventReq(employeeId, req, res) {
 	}
 }
 
-async function processAchievements({ now, category, employeeId }) {
-	await processAwards(now.clone(), category, employeeId);
+async function processAchievements(input: ProcessAchievementsInput) {
+	await Promise.all([processAwards(input), processGoals(input)]);
 }
 
-async function processAwards(
-	now: moment.Moment,
-	category: Category,
-	employeeId: string
-) {
+async function processAwards(input: ProcessAchievementsInput) {
+	const { now, category, employeeId } = input;
 	let awards = await getAwards(employeeId);
 	awards = awards
 		.filter((a) => !a.isCompleted)
@@ -141,9 +144,15 @@ async function processAwards(
 
 	const promises = [];
 
-	for (const [freq, awds] of Array.from(awardMap.entries())) {
+	for (const [frequency, awds] of Array.from(awardMap.entries())) {
 		promises.push(
-			processAwardFrequency(employeeId, freq, awds, now, category)
+			processAwardFrequency(
+				employeeId,
+				frequency,
+				awds,
+				now.clone(),
+				category
+			)
 		);
 	}
 
@@ -157,40 +166,18 @@ async function processAwardFrequency(
 	now: moment.Moment,
 	category: Category
 ): Promise<void> {
-	let startDate: string, endDate: string;
 	if (!awards.length) {
 		return;
 	}
 
-	const format = 'YYYY-MM-DD';
-	switch (frequency) {
-		case 'daily':
-			startDate = `${now.clone().format(format)}  00:00:00`;
-			endDate = `${now.clone().format(format)} 23:59:00`;
-			break;
-		case 'weekly':
-			startDate = now.clone().weekday(1).format(format);
-			endDate = now.clone().weekday(7).format(format);
-			break;
-		case 'monthly':
-			startDate = now.clone().startOf('month').format(format);
-			endDate = now.clone().endOf('month').format(format);
-			return;
-			break;
-		default:
-			startDate = now.clone().startOf('year').format(format);
-			endDate = now.clone().endOf('year').format(format);
-			break;
-	}
-
-	const events: Array<Event> = await getEventsInRange(
+	const events: Array<Event> = await getEventsByFrequency(
 		employeeId,
+		frequency,
 		category,
-		startDate,
-		endDate
+		now.clone()
 	);
 
-	if (!events.length) {
+	if (!events || !events.length) {
 		return;
 	}
 
@@ -204,4 +191,124 @@ async function processAwardFrequency(
 	}
 
 	await Promise.all(promises);
+}
+
+async function processGoals(input: ProcessAchievementsInput) {
+	const { now, category, employeeId } = input;
+	let goals = await getGoals(employeeId);
+	goals = goals.filter((a) => a.category === category);
+
+	const goalsMap: Map<Frequency, Goal> = goals.reduce(
+		(acc: Map<Frequency, Goal>, goal: Goal) => {
+			const { frequency } = goal;
+			acc.set(frequency, goal);
+			return acc;
+		},
+		new Map()
+	);
+
+	const promises = [];
+
+	for (const [frequency, goal] of Array.from(goalsMap.entries())) {
+		promises.push(
+			processGoalsFrequency(employeeId, frequency, goal, now, category)
+		);
+	}
+
+	await Promise.all(promises);
+}
+async function processGoalsFrequency(
+	employeeId: string,
+	frequency: Frequency,
+	goal: Goal,
+	now: moment.Moment,
+	category: Category
+): Promise<void> {
+	let { startDate, endDate } = getRangeDateByFrequency(now, frequency);
+
+	if (await getLastCompletedGoal(employeeId, category, frequency, startDate, endDate)) {
+		return;
+	}
+
+	const events: Array<Event> = await getEventsByFrequency(
+		employeeId,
+		frequency,
+		category,
+		now.clone()
+	);
+
+	console.log(`With the frequency: '${frequency}' the target is ${goal.target}`)
+	console.log(`And we receive: ${events.length} from '${startDate}' to '${endDate}'`);
+	if (!events || !events.length || events.length < goal.target) {
+		return;
+	}
+
+	if(events.length < goal.target) {
+		return;
+	}
+
+	goal.createdAt = now.clone().toISOString();
+
+	await completeGoal(goal);
+}
+
+async function getEventsByFrequency(
+	employeeId: string,
+	frequency: Frequency,
+	category: Category,
+	now: moment.Moment
+): Promise<Array<Event>> {
+	const { startDate, endDate } = getRangeDateByFrequency(now, frequency);
+
+	const events = await getEventsInRange(
+		employeeId,
+		category,
+		startDate,
+		endDate
+	);
+
+	return events;
+}
+
+function getRangeDateByFrequency(
+	now: moment.Moment,
+	frequency: Frequency
+): DateRange {
+	let startDate: string, endDate: string;
+
+	const format = 'YYYY-MM-DD';
+	switch (frequency) {
+		case 'daily':
+			startDate = `${now.clone().format(format)} 00:00:00`;
+			endDate = `${now.clone().format(format)} 23:59:00`;
+			break;
+		case 'weekly':
+			startDate = now.clone().weekday(1).format(format);
+			endDate = now.clone().weekday(7).format(format);
+			break;
+		case 'monthly':
+			startDate = now.clone().startOf('month').format(format);
+			endDate = now.clone().endOf('month').format(format);
+			break;
+		default:
+			startDate = now.clone().startOf('year').format(format);
+			endDate = now.clone().endOf('year').format(format);
+			break;
+	}
+
+	return {
+		startDate,
+		endDate,
+	};
+}
+
+interface DateRange {
+	startDate: string;
+	endDate: string;
+}
+
+interface ProcessAchievementsInput {
+	now: moment.Moment;
+	category: Category;
+	employeeId: string;
 }
