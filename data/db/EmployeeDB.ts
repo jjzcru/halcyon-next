@@ -220,3 +220,13 @@ export async function deleteAuthenticator(
 	await runQuery(query, [authenticatorId, employeeId]);
 	return true;
 }
+
+export async function getAuthenticators(
+	employeeId: string
+): Promise<Array<Authenticator>> {
+	const query = `SELECT ek.* FROM employee_key ek 
+	LEFT JOIN employee e ON (e.id = ek.employee_id)
+	WHERE ek.employee_id = $1;`;
+	let { rows } = await runQuery(query, [employeeId]);
+	return rows.map(mapAuthenticator);
+}

@@ -1,6 +1,6 @@
 import { verifyRegistrationResponse } from '@simplewebauthn/server';
 import {
-	getEmployeeAuthenticators,
+	getAuthenticators,
 	getEmployeeById,
 	resetEmployeeCurrentChallenge,
 	addKey,
@@ -35,7 +35,7 @@ export default async function handler(req, res) {
 
 async function getAuthenticatorsReq(employeeId: string, res: any) {
 	try {
-		let authenticators = await getEmployeeAuthenticators(employeeId);
+		let authenticators = await getAuthenticators(employeeId);
 		res.status(200).json({
 			authenticators: authenticators.map((authenticator) => {
 				const { id, publicKey, attestationContent, isEnabled } =
