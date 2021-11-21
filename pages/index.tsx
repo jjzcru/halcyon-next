@@ -91,7 +91,7 @@ export default function Home() {
     // Wait for the results of verification
     const verificationJSON = await verificationResp.json();
     if (verificationJSON && verificationJSON.verified) {
-      console.log(`You are verified successfully`);
+      alert(`You are verified successfully`);
     }
 	};
 
