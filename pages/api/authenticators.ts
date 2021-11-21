@@ -1,12 +1,12 @@
 import { verifyRegistrationResponse } from '@simplewebauthn/server';
 import {
+	getEmployeeAuthenticators,
 	getEmployeeById,
 	resetEmployeeCurrentChallenge,
 	addKey,
-} from '../../../data/db/EmployeeDB';
-import { getTokenData } from '../../../data/services/auth';
-import { origin } from '../../../middleware/webauthn';
-import { cors, runMiddleware } from '../../../middleware/cors';
+} from '../../data/db/EmployeeDB';
+import { getTokenData } from '../../data/services/auth';
+import { cors, runMiddleware } from '../../middleware/cors';
 
 export default async function handler(req, res) {
 	let tokenData;
@@ -17,7 +17,11 @@ export default async function handler(req, res) {
 		res.status(400).json({ message: e.message, status: 'error' });
 		return;
 	}
+
 	switch (req.method) {
+		case 'GET':
+			await getAuthenticatorsReq(tokenData.id, res);
+			return;
 		case 'POST':
 			await postRegisterReq(tokenData.id, req, res);
 			return;
@@ -29,9 +33,33 @@ export default async function handler(req, res) {
 	}
 }
 
+async function getAuthenticatorsReq(employeeId: string, res: any) {
+	try {
+		let authenticators = await getEmployeeAuthenticators(employeeId);
+		res.status(200).json({
+			authenticators: authenticators.map((authenticator) => {
+				const { id, publicKey, attestationContent, isEnabled } =
+					authenticator;
+				const pk: string = publicKey as string;
+
+				return {
+					id,
+					redactedPublicKey: pk.substring(pk.length - 12),
+					transports: attestationContent.transports,
+					isEnabled,
+				};
+			}),
+			status: 'success',
+		});
+	} catch (e) {
+		res.status(500).json({ message: e.message, status: 'error' });
+		return;
+	}
+}
+
 async function postRegisterReq(employeeId, req, res) {
 	const { body } = req;
-	const { id, email, challenge } = await getEmployeeById(employeeId);
+	const { challenge } = await getEmployeeById(employeeId);
 	if (!challenge) {
 		res.status(409).send({
 			status: 'error',
@@ -40,6 +68,8 @@ async function postRegisterReq(employeeId, req, res) {
 		return;
 	}
 	let verification;
+
+	const origin = process.env.WEB_AUTHN_ORIGIN;
 
 	try {
 		verification = await verifyRegistrationResponse({

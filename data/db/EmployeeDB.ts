@@ -12,6 +12,7 @@ export interface Employee {
 	personality?: string;
 	challenge?: string;
 	isDepressed?: boolean;
+	isMFAEnabled?: boolean;
 }
 
 export interface Authenticator {
@@ -23,6 +24,7 @@ export interface Authenticator {
 	publicKey: Buffer | string;
 	attestationId: string;
 	attestationContent: any;
+	isEnabled?: boolean;
 }
 
 function mapData(row: any): Employee {
@@ -40,6 +42,10 @@ function mapData(row: any): Employee {
 			typeof row.is_depressed === 'string'
 				? JSON.parse(row.is_depressed)
 				: row.is_depressed,
+		isMFAEnabled:
+			typeof row.is_mfa_enabled === 'string'
+				? JSON.parse(row.is_mfa_enabled)
+				: row.is_mfa_enabled,
 	};
 }
 
@@ -55,6 +61,10 @@ function mapAuthenticator(row: any): Authenticator {
 		attestationContent: row.attestation_content
 			? JSON.parse(row.attestation_content)
 			: null,
+		isEnabled:
+			typeof row.is_enabled === 'string'
+				? JSON.parse(row.is_enabled)
+				: row.is_enabled,
 	};
 }
 
@@ -87,6 +97,12 @@ export async function setEmployeeDepression(
 ): Promise<Employee> {
 	const query = `UPDATE employee SET is_depressed = $2 WHERE id = $1;`;
 	await runQuery(query, [employeeId, isDepressed]);
+	return getEmployeeById(employeeId);
+}
+
+export async function setEmployeeMFA(employeeId: string, isEnabled: boolean) {
+	const query = `UPDATE employee SET is_mfa_enabled = $2 WHERE id = $1;`;
+	await runQuery(query, [employeeId, isEnabled]);
 	return getEmployeeById(employeeId);
 }
 
@@ -167,7 +183,9 @@ export async function addKey(
 export async function getEmployeeAuthenticators(
 	employeeId: string
 ): Promise<Array<Authenticator>> {
-	const query = `SELECT * FROM employee_key WHERE employee_id = $1;`;
+	const query = `SELECT ek.* FROM employee_key ek 
+	LEFT JOIN employee e ON (e.id = ek.employee_id)
+	WHERE ek.employee_id = $1 AND e.is_mfa_enabled = TRUE;`;
 	let { rows } = await runQuery(query, [employeeId]);
 	return rows.map(mapAuthenticator);
 }
@@ -181,4 +199,24 @@ export async function updateAuthenticator(
 		authenticator.counter,
 	]);
 	return rows.map(mapAuthenticator);
+}
+
+export async function enableAuthenticator(
+	authenticatorId: string,
+	isEnabled: boolean,
+	employeeId: string
+): Promise<boolean> {
+	const query = `UPDATE employee_key SET is_enabled = $2 WHERE id = $1 and employee_id = $3;`;
+	console.log({ employeeId, isEnabled });
+	await runQuery(query, [authenticatorId, isEnabled, employeeId]);
+	return isEnabled;
+}
+
+export async function deleteAuthenticator(
+	employeeId: string,
+	authenticatorId: string
+): Promise<boolean> {
+	const query = `DELETE FROM employee_key WHERE id = $1 AND employee_id = $2;`;
+	await runQuery(query, [authenticatorId, employeeId]);
+	return true;
 }

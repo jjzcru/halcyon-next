@@ -3,6 +3,9 @@ import {
 	startAuthentication,
 } from '@simplewebauthn/browser';
 
+const email = 'viyeta@gmail.com';
+const password = 'password';
+
 export default function Home() {
 	const token =
 			'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5ODkyNzA5MDYzMTY0OTA0MSIsImlhdCI6MTYzNjg1MzE4NSwiZXhwIjoxNjQ0NjI5MTg1LCJzdWIiOiJlbXBsb3llZSJ9.IlMIYgGysXFUr7UPplIVFVqFzPBZf5A-2mjs_rwrTwg';
@@ -52,7 +55,7 @@ export default function Home() {
 			'/api/webauthn/generate-authentication-options',
       {
 				method: 'GET',
-				headers: new Headers({ authorization: `Bearer ${token}` }),
+				headers: new Headers({ authorization: 'Basic ' + btoa(`${email}:${password}`) }),
 			}
 		);
 
@@ -70,7 +73,7 @@ export default function Home() {
         }
       } )
 			asseResp = await startAuthentication(options);
-      console.log(`I pass the attestation`);
+      
 			console.log(asseResp);
 		} catch (error) {
 			console.error(error);
@@ -80,7 +83,7 @@ export default function Home() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'authorization': `Bearer ${token}`
+        'authorization': 'Basic ' + btoa(`${email}:${password}`)
       },
       body: JSON.stringify(asseResp),
     });

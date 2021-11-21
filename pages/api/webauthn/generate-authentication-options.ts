@@ -1,28 +1,23 @@
+import { generateAuthenticationOptions } from '@simplewebauthn/server';
 import {
-	generateAuthenticationOptions,
-} from '@simplewebauthn/server';
-import {
-    getEmployeeAuthenticators,
+	getEmployeeAuthenticators,
 	getEmployeeById,
+	authenticate,
 	setEmployeeCurrentChallenge,
 } from '../../../data/db/EmployeeDB';
-import { getTokenData } from '../../../data/services/auth';
+import { getSignedToken } from '../../../data/services/auth';
 import { cors, runMiddleware } from '../../../middleware/cors';
 
-
 export default async function handler(req, res) {
-    let tokenData;
 	try {
 		await runMiddleware(req, res, cors);
-		tokenData = await getTokenData(req);
 	} catch (e) {
 		res.status(400).json({ message: e.message, status: 'error' });
 		return;
 	}
-
 	switch (req.method) {
 		case 'GET':
-			await getAuthReq(tokenData.id, req, res);
+			await getAuthReq(req, res);
 			return;
 		default:
 			res.status(400).json({
@@ -32,22 +27,40 @@ export default async function handler(req, res) {
 	}
 }
 
-async function getAuthReq(employeeId, req: any, res: any) {
-	const authenticators = await getEmployeeAuthenticators(employeeId);
-    const allowCredentials: any = authenticators.map((authenticator) => {
-        return {
-            id: new Buffer(authenticator.credentialId as string, 'base64'),
-            type: 'public-key'
-        }
-    });
+async function getAuthReq(req: any, res: any) {
+	const { headers } = req;
+	let authentication = headers['authorization'];
+	if (!authentication) {
+		res.status(401).send({status: 'error', message: 'Missing authorization header'});
+		return;
+	}
 
-    const options = generateAuthenticationOptions({
-		rpID: process.env.WEB_AUTHN_RPID || 'localhost',
-        allowCredentials,
-        userVerification: 'preferred'
+	authentication = authentication.replace('Basic ', '');
+	const [email, password] = (new Buffer(authentication, 'base64')).toString().split(':');
+	const employee = await authenticate(email, password);
+	if (!employee) {
+		res.status(401).json({
+			message: 'Invalid credentials',
+			status: 'error',
+		});
+		return;
+	}
+
+	const authenticators = await getEmployeeAuthenticators(employee.id);
+	const allowCredentials: any = authenticators.map((authenticator) => {
+		return {
+			id: new Buffer(authenticator.credentialId as string, 'base64'),
+			type: 'public-key',
+		};
 	});
 
-    await setEmployeeCurrentChallenge(employeeId, options.challenge);
+	const options = generateAuthenticationOptions({
+		rpID: process.env.WEB_AUTHN_RPID || 'localhost',
+		allowCredentials,
+		userVerification: 'preferred',
+	});
+
+	await setEmployeeCurrentChallenge(employee.id, options.challenge);
 
 	res.status(200).json({ options, status: 'success' });
 }

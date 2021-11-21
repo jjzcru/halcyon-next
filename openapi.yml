@@ -347,7 +347,38 @@ paths:
                     type: string
                   isDepressed: 
                     type: boolean
-                      
+  /me/mfa:
+    put:
+      security:
+        - bearerAuth: []
+      summary: Set if the employee inabled MFA
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                isMFAEnabled: 
+                  type: boolean
+      responses:
+        '401':
+          description: 'Missing authorization header'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_missing_header'
+        '200':    # status code
+          description: Return the value that was set for the depression
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties:
+                  status:
+                    type: string
+                  isMFAEnabled: 
+                    type: boolean 
   /reservation:
     get:
       security:
