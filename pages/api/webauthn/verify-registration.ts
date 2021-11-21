@@ -31,7 +31,7 @@ export default async function handler(req, res) {
 
 async function postRegisterReq(employeeId, req, res) {
 	const { body } = req;
-	const { id, email, challenge } = await getEmployeeById(employeeId);
+	const { challenge } = await getEmployeeById(employeeId);
 	if (!challenge) {
 		res.status(409).send({
 			status: 'error',
