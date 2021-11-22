@@ -7,6 +7,7 @@ export interface Sound {
 	credit?: string;
 	url?: string;
 	type?: 'song' | 'sound' | 'guide';
+	picture?: string;
 }
 
 function mapSound(row: any): Sound {
@@ -18,6 +19,7 @@ function mapSound(row: any): Sound {
 		credit: row.credit,
         url: row.url,
 		type: row.type,
+		picture: row.picture
 	};
 }
 
