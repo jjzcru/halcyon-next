@@ -11,6 +11,7 @@ export interface Room {
 	startAvailableTime?: string;
 	endAvailableTime?: string;
 	availableTimes?: Array<string>;
+	picture?: string;
 }
 
 export interface Reservation {
@@ -44,6 +45,7 @@ function mapRoom(row: any): Room {
 		timeInterval: parseInt(`${row.time_interval}`),
 		startAvailableTime: row.start_available_time,
 		endAvailableTime: row.end_available_time,
+		picture: row.picture,
 	};
 }
 
